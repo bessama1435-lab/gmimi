@@ -18,8 +18,23 @@ client = genai.Client(api_key=api_key)
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# 3. القائمة الجانبية (Sidebar) لرفع الصور وإدارة الجلسة
+# 3. القائمة الجانبية (Sidebar) لرفع الصور وتغيير النموذج
 with st.sidebar:
+    st.header("⚙️ إعدادات النموذج")
+    
+    # قائمة اختيار النموذج لتجنب المشاكل والأخطاء
+    selected_model = st.selectbox(
+        "اختر نموذج الذكاء الاصطناعي:",
+        [
+            "gemini-3.6-flash",
+            "gemini-3.5-flash",
+            "gemini-3.1-flash-lite"
+        ],
+        index=0,
+        help="إذا واجهت خطأ ضغط خوادم (503)، قم بتغيير النموذج من هنا وتجربة نموذج آخر فوراً."
+    )
+    
+    st.divider()
     st.header("📷 إرفاق صورة")
     uploaded_file = st.file_uploader("اختر صورة للتحليل مع سؤالك...", type=["jpg", "jpeg", "png"])
     
@@ -58,7 +73,7 @@ if prompt := st.chat_input("اكتب رسالتك أو سؤالك عن الصو�
 
     # إرسال الطلب إلى Gemini API
     with st.chat_message("assistant"):
-        with st.spinner("جاري المعالجة والتفكير..."):
+        with st.spinner(f"جاري التفكير باستخدام {selected_model}..."):
             try:
                 # تجميع المحتويات (الصورة + النص)
                 contents = []
@@ -66,9 +81,9 @@ if prompt := st.chat_input("اكتب رسالتك أو سؤالك عن الصو�
                     contents.append(current_image)
                 contents.append(prompt)
 
-                # التوليد باستخدام النموذج الحديث الموصى به
+                # التوليد باستخدام النموذج المختار من القائمة الجانبية
                 response = client.models.generate_content(
-                    model="gemini-3.6-flash",
+                    model=selected_model,
                     contents=contents
                 )
                 
@@ -79,4 +94,5 @@ if prompt := st.chat_input("اكتب رسالتك أو سؤالك عن الصو�
                 st.session_state.messages.append({"role": "assistant", "content": response.text})
                 
             except Exception as e:
-                st.error(f"حدث خطأ أثناء الاتصال: {e}")
+                st.error(f"حدث خطأ أثناء الاتصال بالنموذج `{selected_model}`:\n\n{e}")
+                st.info("💡 **نصيحة:** إذا كان هناك ضغط على الخادم (503)، اختر نموذجاً آخر من القائمة الجانبية وأعد إرسال سؤالك.")
