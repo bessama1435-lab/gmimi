@@ -66,9 +66,9 @@ if prompt := st.chat_input("اكتب رسالتك أو سؤالك عن الصو�
                     contents.append(current_image)
                 contents.append(prompt)
 
-                # التوليد باستخدام نموذج متعدد الوسائط (Multimodal)
+                # التوليد باستخدام النموذج الحديث الموصى به
                 response = client.models.generate_content(
-                    model="gemini-2.5-flash",
+                    model="gemini-3.6-flash",
                     contents=contents
                 )
                 
